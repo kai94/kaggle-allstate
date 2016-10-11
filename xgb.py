@@ -8,6 +8,8 @@ from sklearn.linear_model import LinearRegression,Lasso
 from sklearn.metrics import mean_absolute_error
 from sklearn.svm import LinearSVR,SVR
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.grid_search import GridSearchCV,RandomizedSearchCV
+
 if __name__=='__main__':
     np.random.seed(2016)
     random_state = 2016
@@ -52,7 +54,7 @@ if __name__=='__main__':
     X = X.as_matrix()
     np.save('data/X.npy',X)
         
-    """
+
     X = np.load('data/X.npy')
     y = np.load('data/y.npy')
     n = 188318
@@ -71,9 +73,12 @@ if __name__=='__main__':
 
     X_pred = np.asfarray(X_pred)
     X = X[:n]
-
-
-
+    np.save('data/X_train.npy',X)
+    np.save('data/X_pred.npy',X_pred)
+    """
+    X = np.load('data/X_train.npy')
+    X_pred = np.load('data/X_pred.npy')
+    y = np.load('data/y.npy')
     
     predictions = []
     kf = KFold(len(X),5,random_state=random_state)
@@ -81,18 +86,18 @@ if __name__=='__main__':
     for train_idx, test_idx in kf:
         X_train, X_test = X[train_idx], X[test_idx]
         y_train, y_test = y[train_idx], y[test_idx]
-        """
-        clf = xgb.XGBRegressor(max_depth=6,
-                            learning_rate=0.02, 
+       
+        clf = xgb.XGBRegressor(max_depth=10,
+                               learning_rate=0.01, 
                                    n_estimators=1000, 
                                    silent=True, 
                                    objective='reg:linear', 
                                    nthread=-1, 
                                    gamma=0,
-                                   min_child_weight=0.1,
+                                   min_child_weight=0.15,
                                    max_delta_step=0, 
-                                   subsample=0.8, 
-                                   colsample_bytree=1.,
+                                   subsample=0.5,
+                                   colsample_bytree=0.6,
                                    colsample_bylevel=1, 
                                    reg_alpha=0, 
                                    reg_lambda=1, 
@@ -105,7 +110,7 @@ if __name__=='__main__':
         xgb.plot_importance(clf)
         plt.savefig('feature_importance_xgb.png')
         print res.best_score
-        """
+       
         """
         clf = KNeighborsRegressor(n_neighbors=50,n_jobs=-1)
         clf.fit(X_train,y_train)
@@ -115,22 +120,23 @@ if __name__=='__main__':
         pred = clf.predict(X_pred)
         predictions.append(pred)
         """
+    """
     params={'max_depth': [4,6,8,10],
             'subsample': [0.5,0.75,1],
             'colsample_bytree': [0.4, 0.6,0.8,1.0],
             'learning_rate':[0.01,0.006,0.002],
-            'objective':['binary:logistic'],
+            'objective':['reg:linear'],
             'seed':[1440],
             'min_child_weight':[0.15,0.30,0.5,1],
             'n_estimators':[1000]
     }
 
     clf = xgb.XGBRegressor()        
-    gs = RandomizedSearchCV(clf,params,cv=4,scoring='mae',verbose=2,n_iter=30)
-    gs.fit(dat,target)
+    gs = RandomizedSearchCV(clf,params,cv=3,scoring='mean_absolute_error',verbose=2,n_iter=16)
+    gs.fit(X,y)
     print gs.best_score_
     print gs.best_estimator_
-
+    """
 
 
     print val_loss
