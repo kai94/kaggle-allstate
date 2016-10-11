@@ -107,19 +107,17 @@ if __name__=='__main__':
         
         res = clf.fit(X_train, y_train, eval_metric='mae', verbose = True, 
                       eval_set = [(X_test, y_test)],early_stopping_rounds=200)
-        xgb.plot_importance(clf)
+        fig, ax = plt.subplots(1, 1, figsize=(7, 25))
+        feat = xgb.plot_importance(clf,ax=ax)
+        print feat
+
         plt.savefig('feature_importance_xgb.png')
-        print res.best_score
-       
-        """
-        clf = KNeighborsRegressor(n_neighbors=50,n_jobs=-1)
-        clf.fit(X_train,y_train)
-        E = mean_absolute_error(y_test,clf.predict(X_test))
+        E = res.best_score
         print E
         val_loss.append(E)
         pred = clf.predict(X_pred)
         predictions.append(pred)
-        """
+
     """
     params={'max_depth': [4,6,8,10],
             'subsample': [0.5,0.75,1],
@@ -141,4 +139,4 @@ if __name__=='__main__':
 
     print val_loss
     predictions = np.array(predictions)
-    np.save('data/pred',predictions)
+    np.save('data/pred1',predictions)
