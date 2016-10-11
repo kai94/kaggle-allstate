@@ -88,7 +88,7 @@ if __name__=='__main__':
         y_train, y_test = y[train_idx], y[test_idx]
        
         clf = xgb.XGBRegressor(max_depth=10,
-                               learning_rate=0.01, 
+                               learning_rate=0.025, 
                                    n_estimators=1000, 
                                    silent=True, 
                                    objective='reg:linear', 
@@ -107,9 +107,8 @@ if __name__=='__main__':
         
         res = clf.fit(X_train, y_train, eval_metric='mae', verbose = True, 
                       eval_set = [(X_test, y_test)],early_stopping_rounds=200)
-        fig, ax = plt.subplots(1, 1, figsize=(7, 25))
-        feat = xgb.plot_importance(clf,ax=ax)
-        print feat
+        fig, ax = plt.subplots(1, 1, figsize=(7, 30))
+        xgb.plot_importance(clf,ax=ax)
 
         plt.savefig('feature_importance_xgb.png')
         E = res.best_score
@@ -139,4 +138,4 @@ if __name__=='__main__':
 
     print val_loss
     predictions = np.array(predictions)
-    np.save('data/pred1',predictions)
+    np.save('data/pred3',predictions)
