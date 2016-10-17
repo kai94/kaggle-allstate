@@ -9,86 +9,53 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.svm import LinearSVR,SVR
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.grid_search import GridSearchCV,RandomizedSearchCV
+from fastFM.als import FMRegression
+from scipy.sparse import csc_matrix
+
 
 if __name__=='__main__':
     np.random.seed(2016)
     random_state = 2016
     random.seed(2016)
-    """
-    X_train = pd.read_csv('data/train.csv')
-    X_pred = pd.read_csv('data/test.csv')
-    y = X_train['loss'].values
-    
-    X_train.drop(['id','loss'], axis=1, inplace = True)
-    idx = X_pred['id'].values
-    np.save('data/y.npy',y)
-    np.save('data/idx.npy',idx)
-    X_pred.drop(['id'], axis = 1, inplace = True)
-    print len(X_train),len(X_pred)
-    X = pd.concat((X_train,X_pred)).reset_index(drop=True)
 
-    n_train = len(X_train)
-    features = X.columns
-    cats = [feat for feat in features if 'cat' in feat]
-    cats_onehot = cats[:76]
-    cats_popularity = cats[76:]
 
-    for feat in cats_onehot:
-        dat = X[feat]
-        name = dat.value_counts().index
-        dat.columns = [feat + n for n in name]
-        X.drop([feat], axis = 1, inplace = True)
-        dat = pd.get_dummies(dat)
-        X = pd.concat([X,dat], axis = 1)
-
-    for feat in cats_popularity:
-        dat = X[:n_train][feat]
-        pop = dat.value_counts() / n_train
-        dat = X[feat]
-        for i in pop.index:
-            dat[dat == i] = pop[i]
-        X[feat] = dat
-        
-
-    print X
-    X = X.as_matrix()
-    np.save('data/X.npy',X)
-        
-
-    X = np.load('data/X.npy')
+    X = np.load('data/X3.npy')
     y = np.load('data/y.npy')
     n = 188318
     X_pred = X[n:]
     n1,n2 = X_pred.shape
     string = type('a')
     NAN = []
+    count = 0
     for i in range(n1):
         for j in range(n2):
             if type(X_pred[i,j]) == string:
                 NAN.append(X_pred[i,j])
-               
+                count += 1
+    print count
     NAN = set(NAN)
     for nan in NAN:
         X_pred[X_pred == nan] = 0.0
 
     X_pred = np.asfarray(X_pred)
     X = X[:n]
-    np.save('data/X_train.npy',X)
-    np.save('data/X_pred.npy',X_pred)
-    """
-    X = np.load('data/X_train.npy')
-    X_pred = np.load('data/X_pred.npy')
-    y = np.load('data/y.npy')
+    np.save('data/X4_train.npy',X)
+    np.save('data/X4_pred.npy',X_pred)
     
+    X = np.load('data/X3_train.npy')
+    X_pred = np.load('data/X3_pred.npy')
+    y = np.load('data/y.npy')
+
     predictions = []
     kf = KFold(len(X),5,random_state=random_state)
     val_loss = []
+
     for train_idx, test_idx in kf:
         X_train, X_test = X[train_idx], X[test_idx]
         y_train, y_test = y[train_idx], y[test_idx]
-       
+        """
         clf = xgb.XGBRegressor(max_depth=10,
-                               learning_rate=0.025, 
+                               learning_rate=0.015, 
                                    n_estimators=1000, 
                                    silent=True, 
                                    objective='reg:linear', 
@@ -116,20 +83,26 @@ if __name__=='__main__':
         val_loss.append(E)
         pred = clf.predict(X_pred)
         predictions.append(pred)
-
-    """
+        """
+        fm = FMRegression(n_iter=100, init_stdev=0.1, rank=10, l2_reg_w=0.1, l2_reg_V=0.5)
+        fm.fit(csc_matrix(X_train), y_train)
+        E = mean_absolute_error(y_test,fm.predict(csc_matrix(X_test)))
+        print E
+        val_loss.append(E)
+        pred = fm.predict(csc_matrix(X_pred))
+        predictions.append(pred)
     params={'max_depth': [4,6,8,10],
             'subsample': [0.5,0.75,1],
             'colsample_bytree': [0.4, 0.6,0.8,1.0],
-            'learning_rate':[0.01,0.006,0.002],
+            'learning_rate':[0.015],
             'objective':['reg:linear'],
             'seed':[1440],
             'min_child_weight':[0.15,0.30,0.5,1],
             'n_estimators':[1000]
     }
-
+    """
     clf = xgb.XGBRegressor()        
-    gs = RandomizedSearchCV(clf,params,cv=3,scoring='mean_absolute_error',verbose=2,n_iter=16)
+    gs = RandomizedSearchCV(clf,params,cv=3,scoring='mean_absolute_error',verbose=2,n_iter=13)
     gs.fit(X,y)
     print gs.best_score_
     print gs.best_estimator_
