@@ -17,9 +17,9 @@ COMB_FEATURE = 'cat80,cat87,cat57,cat12,cat79,cat10,cat7,cat89,cat2,cat72,cat81,
 
 def encode(charcode):
     r = 0
-    ln = len(charcode)
+    ln = len(str(charcode))
     for i in range(ln):
-        r += (ord(charcode[i])-ord('A')+1)*26**(ln-i-1)
+        r += (ord(str(charcode)[i] )-ord('A')+1)*26**(ln-i-1)
     return r
 
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
             remove = remove_train.union(remove_test)
             def filter_cat(x):
                 if x in remove:
-                    return "a"
+                    return np.nan
                 return x
 
             train_test[feat] = train_test[feat].apply(lambda x: filter_cat(x), 1)
@@ -145,6 +145,7 @@ if __name__ == "__main__":
     #test = test.as_matrix()
     train.drop('id',inplace=True,axis=1)
     test.drop('id',inplace=True,axis=1)
+
     xgb_params = {
         'seed': 0,
         'colsample_bytree': 0.7,
@@ -177,7 +178,7 @@ if __name__ == "__main__":
 
     best_nrounds = 20000  # 640 score from above commented out code (Faron)
     allpredictions = pd.DataFrame()
-    kfolds = 5
+    kfolds = 10
     predictions = []
 
 
@@ -221,5 +222,5 @@ if __name__ == "__main__":
     predictions = np.array(predictions)
     predictions = np.mean(predictions, axis=0)
     print sum(val_loss) / kfolds
-    np.save('blend_pred_xgb_19_lex_fair3_c07_log',predictions)
-    np.save('blend_train_xgb_19_lex_fair3_c07_log',blend_train)
+    np.save('blend_pred_xgb_20_lex_fair3_c07_log',predictions)
+    np.save('blend_train_xgb_20_lex_fair3_c07_log',blend_train)
