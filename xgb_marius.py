@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
             def filter_cat(x):
                 if x in remove:
-                    return np.nan
+                    return "@"
                 return x
 
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     print('\nMedian Loss:', train.loss.median())
     print('Mean Loss:', train.loss.mean())
 
-    ids = pd.read_csv('input/test.csv')['id']
+    ids = pd.read_csv('data/test.csv')['id']
     train_y = np.log(train['loss'] + shift)
     train_x = train.drop(['loss','id'], axis=1)
     test_x = test.drop(['loss','id'], axis=1)
@@ -149,7 +149,7 @@ if __name__ == "__main__":
             'colsample_bytree': 0.7,
             'silent': 1,
             'subsample': 0.7,
-            'learning_rate': 0.03,
+            'learning_rate': 0.01,
             'objective': 'reg:linear',
             'max_depth': 12,
             'min_child_weight': 100,
@@ -182,5 +182,6 @@ if __name__ == "__main__":
     predictions = np.array(predictions)
     predictions = np.mean(predictions, axis=0)
 
-    np.save('blend_pred_xgb_18_lex_fair4_c07_marius',predictions)
-    np.save('blend_train_xgb_18_lex_fair4_c07_marius',blend_train)
+    np.save('blend_pred_xgb_21_lex_fair4_c07_marius',predictions)
+    np.save('blend_train_xgb_21_lex_fair4_c07_marius',blend_train)
+    
