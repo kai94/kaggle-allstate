@@ -1,10 +1,9 @@
 #!/bin/bash
 
-yum update -y
-easy_install pip
 
+sudo apt-get install python-numpy -y
+sudo apt-get install python-pandas -y
+sudo apt install python-pip -y
 
-sudo apt-get install python-numpy
-sudo apt-get install python-pandas
-
+export LC_ALL=C
 pip install sklearn xgboost
